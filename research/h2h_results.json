@@ -1,0 +1,164 @@
+[
+  {
+    "problem": "bounded_counter",
+    "condition": "A",
+    "label": "Proven + Local",
+    "verified": false,
+    "full_success": false,
+    "wall_time_sec": 63.5,
+    "exit_code": 0
+  },
+  {
+    "problem": "bounded_counter",
+    "condition": "C",
+    "label": "Freestyle + Local",
+    "verified": false,
+    "full_success": false,
+    "wall_time_sec": 62.4,
+    "exit_code": 1
+  },
+  {
+    "problem": "stack",
+    "condition": "A",
+    "label": "Proven + Local",
+    "verified": false,
+    "full_success": false,
+    "wall_time_sec": 49.5,
+    "exit_code": 0
+  },
+  {
+    "problem": "stack",
+    "condition": "C",
+    "label": "Freestyle + Local",
+    "verified": false,
+    "full_success": false,
+    "wall_time_sec": 83.2,
+    "exit_code": 1
+  },
+  {
+    "problem": "priority_queue",
+    "condition": "A",
+    "label": "Proven + Local",
+    "verified": false,
+    "full_success": false,
+    "wall_time_sec": 143.7,
+    "exit_code": 1
+  },
+  {
+    "problem": "priority_queue",
+    "condition": "C",
+    "label": "Freestyle + Local",
+    "verified": false,
+    "full_success": false,
+    "wall_time_sec": 79.3,
+    "exit_code": 1
+  },
+  {
+    "problem": "sorted_list",
+    "condition": "A",
+    "label": "Proven + Local",
+    "verified": false,
+    "full_success": false,
+    "wall_time_sec": 61.8,
+    "exit_code": 1
+  },
+  {
+    "problem": "sorted_list",
+    "condition": "C",
+    "label": "Freestyle + Local",
+    "verified": false,
+    "full_success": false,
+    "wall_time_sec": 80.8,
+    "exit_code": 1
+  },
+  {
+    "problem": "unique_set",
+    "condition": "A",
+    "label": "Proven + Local",
+    "verified": false,
+    "full_success": false,
+    "wall_time_sec": 59.9,
+    "exit_code": 1
+  },
+  {
+    "problem": "unique_set",
+    "condition": "C",
+    "label": "Freestyle + Local",
+    "verified": false,
+    "full_success": false,
+    "wall_time_sec": 107.5,
+    "exit_code": 1
+  },
+  {
+    "problem": "pipeline_state",
+    "condition": "A",
+    "label": "Proven + Local",
+    "verified": false,
+    "full_success": false,
+    "wall_time_sec": 180.2,
+    "exit_code": 1
+  },
+  {
+    "problem": "pipeline_state",
+    "condition": "C",
+    "label": "Freestyle + Local",
+    "verified": false,
+    "full_success": false,
+    "wall_time_sec": 110.5,
+    "exit_code": 1
+  },
+  {
+    "problem": "binary_search",
+    "condition": "A",
+    "label": "Proven + Local",
+    "verified": false,
+    "full_success": false,
+    "wall_time_sec": 101.1,
+    "exit_code": 1
+  },
+  {
+    "problem": "binary_search",
+    "condition": "C",
+    "label": "Freestyle + Local",
+    "verified": false,
+    "full_success": false,
+    "wall_time_sec": 86.7,
+    "exit_code": 1
+  },
+  {
+    "problem": "ring_buffer",
+    "condition": "A",
+    "label": "Proven + Local",
+    "verified": false,
+    "full_success": false,
+    "wall_time_sec": 117.7,
+    "exit_code": 1
+  },
+  {
+    "problem": "ring_buffer",
+    "condition": "C",
+    "label": "Freestyle + Local",
+    "verified": false,
+    "full_success": false,
+    "wall_time_sec": 81.2,
+    "exit_code": 1
+  },
+  {
+    "problem": "balanced_parentheses",
+    "condition": "A",
+    "label": "Proven + Local",
+    "verified": false,
+    "full_success": false,
+    "wall_time_sec": 44.3,
+    "exit_code": 1
+  },
+  {
+    "problem": "balanced_parentheses",
+    "condition": "C",
+    "label": "Freestyle + Local",
+    "verified": false,
+    "full_success": false,
+    "wall_time_sec": 146.9,
+    "exit_code": 1
+  }
+]

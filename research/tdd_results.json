@@ -1,0 +1,83 @@
+[
+  {
+    "problem": "bounded_counter",
+    "condition": "T-local",
+    "label": "TDD + Local (qwen 14B)",
+    "tests_pass": false,
+    "full_success": false,
+    "wall_time_sec": 61.1,
+    "exit_code": 1
+  },
+  {
+    "problem": "stack",
+    "condition": "T-local",
+    "label": "TDD + Local (qwen 14B)",
+    "tests_pass": true,
+    "full_success": true,
+    "wall_time_sec": 22.5,
+    "exit_code": 0
+  },
+  {
+    "problem": "priority_queue",
+    "condition": "T-local",
+    "label": "TDD + Local (qwen 14B)",
+    "tests_pass": true,
+    "full_success": true,
+    "wall_time_sec": 22.3,
+    "exit_code": 0
+  },
+  {
+    "problem": "sorted_list",
+    "condition": "T-local",
+    "label": "TDD + Local (qwen 14B)",
+    "tests_pass": true,
+    "full_success": true,
+    "wall_time_sec": 21.3,
+    "exit_code": 0
+  },
+  {
+    "problem": "unique_set",
+    "condition": "T-local",
+    "label": "TDD + Local (qwen 14B)",
+    "tests_pass": true,
+    "full_success": true,
+    "wall_time_sec": 23.6,
+    "exit_code": 0
+  },
+  {
+    "problem": "pipeline_state",
+    "condition": "T-local",
+    "label": "TDD + Local (qwen 14B)",
+    "tests_pass": false,
+    "full_success": false,
+    "wall_time_sec": 121.2,
+    "exit_code": 1
+  },
+  {
+    "problem": "binary_search",
+    "condition": "T-local",
+    "label": "TDD + Local (qwen 14B)",
+    "tests_pass": true,
+    "full_success": true,
+    "wall_time_sec": 21.2,
+    "exit_code": 0
+  },
+  {
+    "problem": "ring_buffer",
+    "condition": "T-local",
+    "label": "TDD + Local (qwen 14B)",
+    "tests_pass": false,
+    "full_success": false,
+    "wall_time_sec": 89.7,
+    "exit_code": 1
+  },
+  {
+    "problem": "balanced_parentheses",
+    "condition": "T-local",
+    "label": "TDD + Local (qwen 14B)",
+    "tests_pass": false,
+    "full_success": false,
+    "wall_time_sec": 74.8,
+    "exit_code": 1
+  }
+]

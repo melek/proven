@@ -1,0 +1,9 @@
+run_id,problem,model,mode,max_retries,verified,full_success,highest_stage,proof_status,stage_1,stage_2,stage_3,stage_4,stage_5,retries_s1,retries_s2,retries_s3,retries_s4,retries_s5,total_attempts,total_tokens,llm_calls,wall_time_sec,mentor_interventions,mentor_events,decompose_applied,rollback_events
+2026-02-22T11-21-36,priority_queue,qwen2.5-coder:14b,autonomous,3,False,False,2,none,completed,failed,pending,pending,pending,1,4,0,0,0,5,6788,5,43.2,0,0,False,0
+2026-02-22T11-23-02,priority_queue,qwen2.5-coder:14b,autonomous,3,False,False,2,none,completed,in_progress,pending,pending,pending,1,0,0,0,0,1,3645,2,27.7,0,0,False,0
+2026-02-22T11-23-47,priority_queue,qwen2.5-coder:14b,autonomous,3,False,False,2,none,completed,failed,pending,pending,pending,1,4,0,0,0,5,7479,5,47.3,0,0,False,0
+2026-02-22T18-55-59,priority_queue,qwen2.5-coder:14b,autonomous,3,False,False,3,none,completed,completed,failed,pending,pending,1,2,1,0,0,4,6409,4,49.5,0,0,False,0
+2026-02-22T18-57-33,priority_queue,qwen2.5-coder:14b,autonomous,5,False,False,3,none,completed,completed,failed,pending,pending,1,1,1,0,0,3,5290,3,41.2,0,0,False,0
+2026-02-22T18-58-45,priority_queue,qwen2.5-coder:14b,autonomous,5,False,False,4,failed,completed,completed,failed,failed,pending,1,1,1,5,0,8,24230,8,95.0,0,0,False,0
+2026-02-22T19-17-57,priority_queue,qwen2.5-coder:14b,autonomous,6,False,False,4,failed,completed,completed,failed,failed,pending,1,1,1,6,0,9,29045,9,126.4,3,3,False,0
+2026-02-22T19-56-24,priority_queue,qwen2.5-coder:14b,autonomous,6,True,True,5,none,completed,completed,completed,completed,completed,1,1,1,0,1,4,4879,3,43.0,0,0,True,0
