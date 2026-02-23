@@ -66,15 +66,15 @@ Stage 5: Code Generation
 
 Experiments across 9 benchmarks, 5 conditions:
 
-| Condition | Compiled | Oracle Pass |
-|-----------|----------|-------------|
+| Condition | Compiled | Independent Tests |
+|-----------|----------|-------------------|
 | Proven + Local (qwen 14B) | 5/9 | 69/69 |
 | Proven + Sonnet | 7/9 | 93/93 |
-| Freestyle Dafny + Sonnet | 9/9 | 129/129 |
+| Baseline Dafny + Sonnet | 9/9 | 129/129 |
 | TDD + Local (qwen 14B) | 9/9 | 129/129 |
 | TDD + Sonnet | 9/9 | 129/129 |
 
-Key finding: **zero oracle test failures across all conditions.** All produced implementations are functionally correct. The difference between methods is production rate, not correctness. See `research/paper-outline.md` for the full paper draft.
+Key finding: **zero independent test failures across all conditions.** All produced implementations are functionally correct. The difference between methods is production rate, not correctness. See `research/paper-outline.md` for the full paper draft.
 
 ## Commands
 
@@ -107,5 +107,5 @@ Copy `.env.example` to `.env` and set:
 ## Session History
 
 - **2026-02-21**: Initial research. Explored formal verification landscape, Dijkstra's methodology, modern tool ecosystem.
-- **2026-02-22**: Built the pipeline. Implemented all 5 stages, decomposition engine (14 rewrite rules), mentor system, adaptive temperature. Ran head-to-head experiments (Proven local vs freestyle).
-- **2026-02-23**: TDD vs Formal experiment. Built TDD agent, 129 oracle tests across 9 benchmarks. Ran Proven+Sonnet condition (7/9). All conditions produce correct code — zero oracle failures.
+- **2026-02-22**: Built the pipeline. Implemented all 5 stages, preprocessing engine (14 rewrite rules), mentor system, adaptive temperature. Ran comparative experiments (Proven local vs baseline).
+- **2026-02-23**: TDD vs Formal experiment. Built TDD agent, 129 independent tests across 9 benchmarks. Ran Proven+Sonnet condition (7/9). All conditions produce correct code — zero independent test failures.

@@ -6,7 +6,7 @@
 
 ## Abstract
 
-Large language models can generate code, but producing *formally verified* code remains unreliable. The dominant approach — generate code, check with a verifier, retry on failure — treats the LLM as a black box and the verifier as a test oracle. We present **Proven**, a pipeline that instead structures the problem upstream: requirements are formalized into Dafny specifications, specifications are deterministically preprocessed into simpler forms, and only then does the LLM implement and prove. In a head-to-head comparison across 9 benchmark problems with a 14B local model, Proven's full pipeline compiles 5/9 benchmarks to verified Python versus 0/9 with a freestyle generate-verify-fix loop. Claude Sonnet with the pipeline achieves 7/9; Sonnet freestyle (no pipeline) achieves 9/9 — revealing that model capability currently dominates pipeline sophistication. In a follow-up experiment comparing formal verification against TDD (Test-Driven Development) across 5 conditions, we find that **all produced implementations pass an independent 129-test oracle suite with zero failures** — regardless of whether they were generated through formal verification or TDD. The methods differ in production rate and self-criterion reliability, not in functional correctness. Our results suggest that the full pipeline — including specification preprocessing — is a high-leverage intervention for models near the capability threshold, and that formal verification's value proposition lies not in producing more correct code on well-understood data structure problems, but in providing stronger guarantees for the cases where testing cannot reach.
+Large language models can generate code, but producing *formally verified* code remains unreliable. The dominant approach — generate code, check with a verifier, retry on failure — treats the LLM as a black box and the verifier as a test oracle. We present **Proven**, a pipeline that instead structures the problem upstream: requirements are formalized into Dafny specifications, specifications are deterministically preprocessed into simpler forms, and only then does the LLM implement and prove. In a comparison across 9 benchmark problems with a 14B local model, Proven's full pipeline compiles 5/9 benchmarks to verified Python versus 0/9 with a baseline generate-verify-fix loop. Claude Sonnet with the pipeline achieves 7/9; Sonnet without the pipeline achieves 9/9 using a simple generate-verify-fix loop — revealing that model capability currently dominates pipeline sophistication. In a follow-up experiment comparing formal verification against TDD (Test-Driven Development) across 5 conditions, we find that **all produced implementations pass an independent 129-test suite with zero failures** — regardless of whether they were generated through formal verification or TDD. The methods differ in production rate and the reliability of their built-in validation, not in functional correctness. Our results suggest that the full pipeline — including specification preprocessing — is a high-leverage intervention for models near the capability threshold, and that formal verification's value proposition lies not in producing more correct code on well-understood data structure problems, but in providing stronger guarantees for the cases where testing cannot reach.
 
 ---
 
@@ -28,7 +28,7 @@ The problem is not that the model cannot prove. The problem is that the pipeline
 1. **Proven**: A 5-stage pipeline (requirements → specification → preprocessing → implementation → compilation) that separates concerns by construction
 2. **Deterministic specification preprocessing**: Two categories of rewrites applied *before* the model sees the specification: (a) simplification rewrites that replace hard-to-prove patterns with equivalent simpler forms, and (b) error-correction rewrites that fix common LLM-generated Dafny mistakes
 3. **Mentor system**: A same-model perspective-shift advisor that detects stuck patterns and can recommend architectural changes (including rolling back to re-specify)
-4. **Preliminary evidence**: Observations from head-to-head comparisons suggesting that upstream preprocessing provides substantial gains for weaker models, with a full ablation study planned as future work
+4. **Preliminary evidence**: Observations from comparative experiments suggesting that upstream preprocessing provides substantial gains for weaker models, with a full ablation study planned as future work
 
 ---
 
@@ -91,7 +91,7 @@ Stage 2: Formal Specification
     Structured JSON → Dafny specification (signatures + contracts, no bodies)
     Validated: dafny resolve (parsing + type-checking)
 
-Stage 2.5: Specification Decomposition [NEW]
+Stage 2.5: Specification Preprocessing [NEW]
     Deterministic rewrites: simplify hard-to-prove patterns
     Validated: dafny resolve on decomposed spec
 
@@ -267,21 +267,21 @@ The pipeline that previously could not get past Stage 4 after 6 retries and 3 me
 
 This result demonstrates the pipeline operating at medium difficulty on a self-referential problem — Proven generating verified code that models its own execution semantics. The verified Dafny compiles to executable Python, completing the full requirements-to-code pipeline.
 
-### 6.8 Head-to-Head: Pipeline Structure vs Model Capability
+### 6.8 Comparative Evaluation: Pipeline Structure vs. Model Capability
 
 To isolate the contributions of pipeline structure and model capability, we ran a 3-condition comparison across all 9 benchmarks:
 
 | Condition | Model | Method | Budget |
 |---|---|---|---|
 | A: Proven + Local | qwen2.5-coder:14b | 5-stage pipeline (all features) | 6 retries + 3 mentor + 1 rollback + 3 best-of-N |
-| B: Sonnet Freestyle | Claude Sonnet 4.6 | Generate-verify-fix loop (no pipeline) | 10 iterations |
-| C: Local Freestyle | qwen2.5-coder:14b | Generate-verify-fix loop (no pipeline) | 10 iterations |
+| B: Sonnet Baseline | Claude Sonnet 4.6 | Generate-verify-fix loop (no pipeline) | 10 iterations |
+| C: Local Baseline | qwen2.5-coder:14b | Generate-verify-fix loop (no pipeline) | 10 iterations |
 
-The freestyle agent uses a deliberately minimal prompt with no Dafny syntax guide, no decomposition hints, and no specification preprocessing — matching what a competent developer would provide to an LLM coding assistant: requirements and "make it verify."
+The baseline agent uses a deliberately minimal prompt with no Dafny syntax guide, no preprocessing hints, and no specification preprocessing — matching what a competent developer would provide to an LLM coding assistant: requirements and "make it verify."
 
 **Results:**
 
-| Problem | Difficulty | A: Proven+Local | B: Sonnet Freestyle | C: Local Freestyle |
+| Problem | Difficulty | A: Proven+Local | B: Sonnet Baseline | C: Local Baseline |
 |---|---|---|---|---|
 | bounded_counter | Simple | FAIL | **PASS** | FAIL |
 | stack | Simple | FAIL | **PASS** | FAIL |
@@ -294,27 +294,27 @@ The freestyle agent uses a deliberately minimal prompt with no Dafny syntax guid
 | balanced_parentheses | Hard | FAIL | **PASS** | FAIL |
 | **Total** | | **5/9 (56%)** | **9/9 (100%)** | **0/9 (0%)** |
 
-*PASS = Dafny verified and compiled to Python. FAIL = pipeline could not complete verification. r = retry iterations. N=1 run per condition (no variance data). The Proven+Local column uses results from proven_local_v2 runs, produced after pipeline improvements including additional decomposition rules; the original h2h experiment yielded 0/9 for this condition. Freestyle results are from the original h2h experiment. This cross-version comparison is a limitation; see Threats to Validity.*
+*PASS = Dafny verified and compiled to Python. FAIL = pipeline could not complete verification. r = retry iterations. N=1 run per condition (no variance data). The Proven+Local column uses results from proven_local_v2 runs, produced after pipeline improvements including additional decomposition rules; the original h2h experiment yielded 0/9 for this condition. Baseline results are from the original comparative experiment. This cross-version comparison is a limitation; see Threats to Validity.*
 
 **Key observations:**
 
-1. **Model capability dominates.** Sonnet 4.6 verified all 9 benchmarks freestyle — including 5/9 on the first attempt without any verification feedback loop. The strong model's internal knowledge of Dafny verification patterns exceeds what the pipeline's preprocessing provides.
+1. **Model capability dominates.** Sonnet 4.6 verified all 9 benchmarks without the pipeline — including 5/9 on the first attempt without any verification feedback loop. The strong model's internal knowledge of Dafny verification patterns exceeds what the pipeline's preprocessing provides.
 
-2. **The pipeline provides substantial lift for weak models.** The local 14B model goes from 0/9 freestyle to 5/9 with the pipeline — a dramatic improvement that spans Simple, Medium, and Hard problems (sorted_list, unique_set, pipeline_state, binary_search, ring_buffer). The pipeline's specification preprocessing, syntax correction, and decomposition enable the weak model to succeed where it otherwise cannot.
+2. **The pipeline provides substantial lift for weak models.** The local 14B model goes from 0/9 without the pipeline to 5/9 with it — a dramatic improvement that spans Simple, Medium, and Hard problems (sorted_list, unique_set, pipeline_state, binary_search, ring_buffer). The pipeline's specification preprocessing, syntax correction, and rewrite rules enable the weak model to succeed where it otherwise cannot.
 
 3. **The 4 failures share a pattern.** The 4 benchmarks where the 14B model + pipeline fails (bounded_counter, stack, priority_queue, balanced_parentheses) all involve specific Dafny patterns that the model generates incorrectly and cannot self-correct: missing `modifies this` clauses, postcondition ordering issues on empty structures, and recursive function well-formedness. These suggest specific decomposition rules that could close the gap.
 
 4. **Sonnet's hardest problems were tractable for the local model with the pipeline.** ring_buffer (9 retries for Sonnet) and pipeline_state (5 retries for Sonnet) were among the local model's successes with the pipeline — suggesting the pipeline compensates for model weakness on structurally complex problems through systematic spec preprocessing.
 
-5. **The freestyle prompt is a fair baseline.** Sonnet's 5/9 first-attempt success rate demonstrates that a strong model with a minimal prompt can outperform a weaker model with a sophisticated pipeline. This does not invalidate the pipeline approach — it suggests the pipeline's value scales inversely with model capability.
+5. **The baseline prompt is a fair comparison.** Sonnet's 5/9 first-attempt success rate demonstrates that a strong model with a minimal prompt can outperform a weaker model with a sophisticated pipeline. This does not invalidate the pipeline approach — it suggests the pipeline's value scales inversely with model capability.
 
 **Implications for the pipeline's value proposition:**
 
-The head-to-head reveals a nuanced picture. The pipeline is not a substitute for model capability, but it is a *multiplier* for models at or near the capability threshold. For the 14B model, the pipeline turns "impossible" (0/9 freestyle) into "majority success" (5/9 with pipeline) across all difficulty levels. The open question is whether the pipeline would provide additional lift for mid-tier models (e.g., 70B local models) — and whether it could lift Sonnet's already-strong performance on harder benchmarks beyond the current suite.
+The comparison reveals a nuanced picture. The pipeline is not a substitute for model capability, but it is a *multiplier* for models at or near the capability threshold. For the 14B model, the pipeline turns "impossible" (0/9 without pipeline) into "majority success" (5/9 with pipeline) across all difficulty levels. The open question is whether the pipeline would provide additional lift for mid-tier models (e.g., 70B local models) — and whether it could lift Sonnet's already-strong performance on harder benchmarks beyond the current suite.
 
-### 6.9 TDD vs. Formal Verification: Oracle Test Evaluation
+### 6.9 TDD vs. Formal Verification: Independent Test Evaluation
 
-To evaluate whether formal verification produces *more correct* code than the mainstream alternative (TDD), we ran 5 conditions through an independent oracle test suite of 129 tests across 9 benchmarks. The oracle tests exercise the public API only and are written independently of both the formal specs and the TDD tests.
+To evaluate whether formal verification produces *more correct* code than the mainstream alternative (TDD), we ran 5 conditions through an independent test suite of 129 tests across 9 benchmarks. These tests exercise the public API only and are written independently of both the formal specs and the TDD tests.
 
 **Conditions:**
 
@@ -322,7 +322,7 @@ To evaluate whether formal verification produces *more correct* code than the ma
 |---|---|---|---|
 | Proven + Local | 5-stage pipeline | qwen2.5-coder:14b | 6 retries + mentor + rollback |
 | Proven + Sonnet | 5-stage pipeline | Claude Sonnet 4.6 | 6 retries + mentor + rollback |
-| Freestyle + Sonnet | Generate-verify-fix | Claude Sonnet 4.6 | 10 iterations |
+| Baseline + Sonnet | Generate-verify-fix | Claude Sonnet 4.6 | 10 iterations |
 | TDD + Local | Test-first development | qwen2.5-coder:14b | 10 iterations |
 | TDD + Sonnet | Test-first development | Claude Sonnet 4.6 | 10 iterations |
 
@@ -330,7 +330,7 @@ The TDD agent writes pytest tests once from requirements (never revised), then i
 
 **Results:**
 
-| Problem | Proven(local) | Proven(Sonnet) | Freestyle(Sonnet) | TDD(local) | TDD(Sonnet) |
+| Problem | Proven(local) | Proven(Sonnet) | Baseline(Sonnet) | TDD(local) | TDD(Sonnet) |
 |---|---|---|---|---|---|
 | bounded_counter | skip | 14/14 | 14/14 | 14/14 | 14/14 |
 | stack | skip | 12/12 | 12/12 | 12/12 | 12/12 |
@@ -347,17 +347,17 @@ The TDD agent writes pytest tests once from requirements (never revised), then i
 
 **Key findings:**
 
-1. **Zero oracle failures across all conditions.** Every implementation that was produced — whether through formal verification, freestyle Dafny, or TDD — passes 100% of independent oracle tests. The methods are indistinguishable on functional correctness for these benchmarks.
+1. **Zero independent test failures across all conditions.** Every implementation that was produced — whether through formal verification, baseline generate-verify-fix, or TDD — passes 100% of independent tests. The methods are indistinguishable on functional correctness for these benchmarks.
 
 2. **TDD's self-assessment can be unreliable.** In this single run, the TDD agent with qwen 14B reports 5/9 "pass" (self-generated tests pass), but all 9 implementations are functionally correct per oracle. The 4 apparent "failures" appear to be caused by buggy LLM-generated tests that reject correct implementations. Sonnet's TDD tests were more reliable in this run (8/9 self-pass). Replication is needed to determine whether this pattern is systematic or an artifact of the specific test generation.
 
 3. **Formal verification's failure mode is non-production.** The Proven pipeline sometimes cannot produce code at all (proof discharge fails). When it does produce code, that code is guaranteed correct by construction — and the oracle confirms this empirically.
 
-4. **Production rate varies widely.** Freestyle Dafny + Sonnet and both TDD conditions achieve 9/9 production. Proven + Sonnet achieves 7/9. Proven + local achieves 5/9. The tradeoff is between guarantee strength and production reliability.
+4. **Production rate varies widely.** Baseline Dafny + Sonnet and both TDD conditions achieve 9/9 production. Proven + Sonnet achieves 7/9. Proven + local achieves 5/9. The tradeoff is between guarantee strength and production reliability.
 
-5. **The defect gap is zero.** We define the "defect gap" as cases where self-criterion passes but oracle fails (or vice versa). For all conditions, the defect gap is zero — no false positives or false negatives in either self-assessment method. However, TDD's self-criterion has false negatives (correct code rejected by buggy tests), while formal verification has no false negatives (if it compiles, it's correct).
+5. **No divergence between internal and external validation.** In no case does a method's own validation pass while independent tests fail (or vice versa). However, TDD's self-check produces false negatives (correct code rejected by buggy LLM-generated tests), while formal verification produces no false negatives (if it compiles, it satisfies its specification).
 
-**Limitations:** The oracle suite is 129 finite tests written by Claude Code. It covers basic operations, edge cases, and invariant sequences, but cannot provide the exhaustive guarantee that formal verification does. The benchmarks are relatively simple data structures. On harder problems with subtle invariant violations, the oracle might miss bugs that formal verification would catch. This experiment validates the oracle infrastructure and establishes a baseline; extending to harder problems where the methods diverge is future work.
+**Limitations:** The independent test suite is 129 finite tests written by Claude Code. It covers basic operations, edge cases, and invariant sequences, but cannot provide the exhaustive guarantee that formal verification does. The benchmarks are relatively simple data structures. On harder problems with subtle invariant violations, the tests might miss bugs that formal verification would catch. This experiment validates the testing infrastructure and establishes a baseline; extending to harder problems where the methods diverge is future work.
 
 ---
 
@@ -396,11 +396,11 @@ Proven successfully verifies a Dafny model of its own pipeline state machine —
 
 ### 7.6 The Pipeline-Capability Tradeoff
 
-The head-to-head results reveal a nuanced relationship between pipeline structure and model capability. At the weak end (14B quantized), the pipeline provides the *only* path to verified code — freestyle fails completely. At the strong end (Sonnet 4.6), the pipeline is unnecessary — the model already internalizes the patterns the pipeline externalizes (specification decomposition, error correction, Dafny idioms).
+The comparative results reveal a nuanced relationship between pipeline structure and model capability. At the weak end (14B quantized), the pipeline provides the *only* path to verified code — the baseline generate-verify-fix loop fails completely. At the strong end (Sonnet 4.6), the pipeline is unnecessary — the model already internalizes the patterns the pipeline externalizes (specification preprocessing, error correction, Dafny idioms).
 
 This suggests a capability-dependent value curve: the pipeline provides maximum marginal lift for models that are *near* the verification threshold — capable enough to produce approximately correct Dafny but not quite capable enough to verify consistently. For models well below the threshold, even preprocessing cannot compensate for fundamental capability gaps. For models well above it, the preprocessing is redundant.
 
-The practical implication: as open-source models improve, the pipeline's sweet spot will shift upward in problem difficulty. A 70B model might verify 5/9 freestyle; the pipeline might lift that to 8/9 by preprocessing specifications for the harder problems. This hypothesis motivates future work with mid-tier models.
+The practical implication: as open-source models improve, the pipeline's sweet spot will shift upward in problem difficulty. A 70B model might verify 5/9 without the pipeline; the pipeline might lift that to 8/9 by preprocessing specifications for the harder problems. This hypothesis motivates future work with mid-tier models.
 
 ### 7.7 Testing vs. Formal Verification as Quality Gates
 
@@ -415,8 +415,8 @@ For well-understood data structure problems, this distinction doesn't matter —
 ### 7.8 Implications for LLM + Formal Methods
 
 1. **Specification quality is an optimizable parameter.** Prior work treats specifications as fixed inputs. Our work treats them as intermediate representations that can be preprocessed.
-2. **Deterministic pipeline stages can have outsized impact.** The preprocessing pass involves zero LLM calls and is a key component of the pipeline's improvement over freestyle generation, though isolating its individual contribution requires the planned ablation study.
-3. **Problem formulation complements model capability.** A 14B quantized local model succeeds with the full pipeline on benchmarks where the same model fails freestyle. While the pipeline bundles multiple interventions (preprocessing, structured prompts, mentor, adaptive temperature), preliminary evidence from the priority queue benchmark suggests preprocessing is a key contributor.
+2. **Deterministic pipeline stages can have outsized impact.** The preprocessing pass involves zero LLM calls and is a key component of the pipeline's improvement over baseline generation, though isolating its individual contribution requires the planned ablation study.
+3. **Problem formulation complements model capability.** A 14B quantized local model succeeds with the full pipeline on benchmarks where the same model fails without the pipeline. While the pipeline bundles multiple interventions (preprocessing, structured prompts, mentor, adaptive temperature), preliminary evidence from the priority queue benchmark suggests preprocessing is a key contributor.
 4. **The generate-and-verify paradigm may benefit from a preprocessing stage.** A generate-*preprocess*-and-verify paradigm could complement existing approaches.
 
 ---
@@ -425,7 +425,7 @@ For well-understood data structure problems, this distinction doesn't matter —
 
 ### Internal
 - All results are from single runs (N=1) per condition. Temperature introduces randomness; the planned N=3 trials per cell were not completed. Results should be interpreted as descriptive observations, not statistically validated findings. Replication with N>=3 is needed before firm conclusions can be drawn.
-- The Proven+Local results (5/9) come from a separate run set (proven_local_v2) produced after pipeline improvements, while the freestyle baseline (0/9 local, 9/9 Sonnet) comes from the original head-to-head experiment. The comparison thus conflates pipeline improvements with specification preprocessing effects. A fully controlled comparison would require re-running all conditions against the same pipeline version.
+- The Proven+Local results (5/9) come from a separate run set (proven_local_v2) produced after pipeline improvements, while the baseline (0/9 local, 9/9 Sonnet) comes from the original comparative experiment. The comparison thus conflates pipeline improvements with specification preprocessing effects. A fully controlled comparison would require re-running all conditions against the same pipeline version.
 - The decomposition rules were designed after observing failure modes; overfitting to known problems is possible.
 
 ### External
@@ -440,9 +440,9 @@ For well-understood data structure problems, this distinction doesn't matter —
 
 ## 9. Conclusion
 
-We present Proven, an LLM-driven pipeline for formally verified software development that treats specification quality as a first-class concern. In a head-to-head comparison, the pipeline lifts a 14B local model from 0/9 to 5/9 verified benchmarks — a substantial improvement across all difficulty levels. Claude Sonnet 4.6 with the pipeline achieves 7/9; Sonnet freestyle (no pipeline) achieves 9/9, demonstrating that strong models can internalize many of the patterns the pipeline provides externally.
+We present Proven, an LLM-driven pipeline for formally verified software development that treats specification quality as a first-class concern. In a comparative evaluation, the pipeline lifts a 14B local model from 0/9 to 5/9 verified benchmarks — a substantial improvement across all difficulty levels. Claude Sonnet 4.6 with the pipeline achieves 7/9; Sonnet without the pipeline achieves 9/9, demonstrating that strong models can internalize many of the patterns the pipeline provides externally.
 
-In a follow-up comparing formal verification against TDD, we find that all produced implementations across 5 conditions pass independent oracle tests with zero failures. The methods differ in production rate and self-criterion reliability, not functional correctness — at least on well-understood data structure problems. Formal verification's value proposition is not "more correct code" on easy problems, but stronger guarantees for problems where finite testing cannot reach.
+In a follow-up comparing formal verification against TDD, we find that all produced implementations across 5 conditions pass an independent test suite with zero failures. The methods differ in production rate and the reliability of their own validation, not functional correctness — at least on well-understood data structure problems. Formal verification's value proposition is not "more correct code" on easy problems, but stronger guarantees for problems where finite testing cannot reach.
 
 The central finding is that pipeline sophistication and model capability are complementary axes. Specification preprocessing is a high-leverage, low-cost intervention for models near the verification capability threshold. As model capability improves, the pipeline's value shifts from enabling basic verification to potentially enabling harder problems where the correctness guarantee matters most.
 

@@ -6,17 +6,19 @@ Proven is a 5-stage pipeline that separates concerns existing generate-and-verif
 
 ## Results
 
-In experiments across 9 benchmark problems and 5 conditions, every implementation that was produced passes independent oracle tests — regardless of whether it was generated through formal verification or TDD:
+In experiments across 9 benchmark problems and 5 conditions, every implementation that was produced passes an independent test suite — regardless of whether it was generated through formal verification or TDD:
 
-| Condition | Compiled | Self-criterion | Oracle tests |
-|-----------|----------|---------------|-------------|
+| Condition | Compiled | Own check\* | Independent tests |
+|-----------|----------|------------|-------------------|
 | Proven + qwen 14B (local) | 5/9 | 5/5 | 69/69 |
 | Proven + Claude Sonnet | 7/9 | 7/7 | 93/93 |
-| Freestyle Dafny + Claude Sonnet | 9/9 | 9/9 | 129/129 |
+| Baseline Dafny + Claude Sonnet | 9/9 | 9/9 | 129/129 |
 | TDD + qwen 14B (local) | 9/9 | 5/9 | 129/129 |
 | TDD + Claude Sonnet | 9/9 | 8/9 | 129/129 |
 
-**Zero oracle failures across all conditions.** The methods differ in production rate and self-criterion reliability, not in functional correctness. All benchmarks are data structure problems; N=1 run per condition. See `research/paper-outline.md` for the full analysis including caveats.
+\* "Own check" = each method's built-in validation (Dafny verifier for formal conditions, LLM-generated pytest for TDD).
+
+**Zero independent test failures across all conditions.** The methods differ in production rate and self-check reliability, not in functional correctness. All benchmarks are data structure problems; N=1 run per condition. See `research/paper-outline.md` for the full analysis including caveats.
 
 ## Quick Start
 
@@ -120,12 +122,12 @@ The `research/` directory contains experiment infrastructure:
 
 - `paper-outline.md` — Working paper draft
 - `experimental-plan.md` — Full methodology
-- `freestyle_agent.py` — Generate-verify-fix baseline agent
+- `freestyle_agent.py` — Generate-verify-fix baseline agent (no pipeline structure)
 - `tdd_agent.py` — TDD baseline agent
-- `oracle_tests/` — 129 independent tests across 9 benchmarks
-- `run_head_to_head.py` — H2H experiment orchestration
+- `oracle_tests/` — 129 independent tests across 9 benchmarks (written separately from all generation methods)
+- `run_head_to_head.py` — Comparative experiment orchestration
 - `run_tdd_vs_formal.py` — TDD vs Formal comparison
-- `evaluate_oracle.py` — Oracle evaluation script
+- `evaluate_oracle.py` — Independent test evaluation script
 
 ### Reproducing experiments
 
@@ -136,7 +138,7 @@ python research/run_head_to_head.py --conditions A
 # Run TDD agent on all benchmarks
 python research/run_tdd_vs_formal.py --conditions T-local
 
-# Run oracle tests against outputs
+# Run independent tests against outputs
 python -m pytest research/oracle_tests/ \
     --formal-dir runs/h2h/proven_sonnet \
     --tdd-dir runs/tdd/sonnet
