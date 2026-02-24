@@ -118,6 +118,9 @@ Key flags:
 | compositional_pipeline | Hard+ | Cross-function contract propagation |
 | extended_gcd | Hard+ | Bezout identity loop invariant |
 | insertion_sort | Hard+ | Ghost multiset permutation proof |
+| red_black_tree | Expert | 4+ simultaneous invariants, rotations |
+| compositional_triple | Expert | 3-function contract propagation chain |
+| topological_sort | Expert | Graph DFS with ghost state, global ordering |
 
 ## Research
 

@@ -188,6 +188,9 @@ When the mentor recommends rollback, the pipeline rewinds to Stage 2 with mentor
 | Hard+ | Compositional Pipeline | Cross-function contract propagation (DafnyComp-inspired) |
 | Hard+ | Extended GCD | Bezout identity loop invariant, nonlinear arithmetic |
 | Hard+ | Insertion Sort (Permutation) | Ghost multiset tracking, permutation proof |
+| Expert | Red-Black Tree Insert | 4+ simultaneous invariants, rotation correctness |
+| Expert | Three-Function Compositional Chain | Cross-function contract propagation (DafnyComp-inspired) |
+| Expert | Topological Sort | Graph DFS, ghost state, global ordering over all edges |
 
 ### 5.2 Model Configurations
 
