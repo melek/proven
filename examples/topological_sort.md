@@ -7,24 +7,26 @@ Topological sort produces a linear ordering of vertices in a directed acyclic gr
 A directed graph represented as an adjacency list: a sequence of sequences, where graph[u] contains the list of vertices that u has edges to. Vertices are integers in the range [0, |graph|).
 
 ## Functions
-1. **TopologicalSort(graph)**: Given a directed acyclic graph, return a sequence containing all vertices in a valid topological order. The graph must be a DAG (no cycles).
-2. **IsDAG(graph)**: Return whether the graph contains no directed cycles.
+1. **TopologicalSort(graph)**: Given a directed acyclic graph, return a sequence containing all vertices in a valid topological order. Precondition: the graph is well-formed and is a DAG.
+2. **IsDAG(graph)**: Return whether the graph is a directed acyclic graph. Defined via the existence of a ranking function: a graph is a DAG if and only if there exists a function rank: vertex -> int such that for every edge (u, v), rank(u) < rank(v). This is equivalent to cycle freedom but avoids quantifying over unbounded paths, which is not directly expressible in first-order logic.
 
 ## Properties to Prove
 
 ### Graph validity
 - **Well-formed adjacency list**: Every vertex referenced in any adjacency list is a valid vertex index (0 <= v < |graph|).
-- **No self-loops**: No vertex has an edge to itself (required for DAG property).
 
 ### DAG property
-- **Cycle freedom**: IsDAG returns true if and only if there is no sequence of edges forming a directed cycle. Formally: there is no sequence v0, v1, ..., vk where each (vi, vi+1) is an edge and v0 == vk.
+- **Ranking characterization**: IsDAG returns true if and only if there exists a ranking function rank: vertex -> int such that for every edge (u, v), rank(u) < rank(v). Note: self-loops and cycles are both ruled out by this definition.
 
 ### Topological order correctness
 - **Completeness**: The output contains every vertex exactly once (it is a permutation of [0, |graph|)).
-- **Ordering correctness**: For every edge (u, v) in the graph, u appears before v in the output sequence. Formally: for all u, v where v in graph[u], indexOf(output, u) < indexOf(output, v).
+- **Ordering correctness**: For every edge (u, v) in the graph, u appears before v in the output sequence. Formally: for all u, v where v in graph[u], there exist indices i and j such that output[i] == u and output[j] == v and i < j.
 - **No fabrication**: Every element in the output is a valid vertex index.
 
 ### Algorithm properties
 - **Termination**: The algorithm terminates on all DAG inputs.
-- **Ghost state**: The DFS-based algorithm requires tracking a visited set and a finish-order stack as ghost state. The visited set must satisfy: once a vertex is marked visited, it is never unmarked. The finish order must satisfy: a vertex is pushed to the stack only after all its descendants have been pushed.
-- **DFS invariant**: At any point during DFS, for every visited vertex u and every edge (u, v), either v is already visited or v is currently on the DFS stack (being processed). This invariant is needed to prove cycle detection and ordering correctness.
+
+### Implementation hints (not formal properties)
+The following are guidance for the implementation strategy, not properties to appear in the specification:
+- **Ghost state**: A DFS-based approach requires tracking a visited set and a finish-order stack as ghost state. The visited set must satisfy: once a vertex is marked visited, it is never unmarked. The finish order must satisfy: a vertex is added only after all its descendants have been added.
+- **DFS invariant**: At any point during DFS, for every visited vertex u and every edge (u, v), either v is already visited or v is currently being processed. This invariant supports proving ordering correctness.

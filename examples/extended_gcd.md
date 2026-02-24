@@ -10,12 +10,13 @@ The extended Euclidean algorithm computes the greatest common divisor of two int
 
 ### GCD properties
 - **Divides both inputs**: The returned g divides both a and b.
-- **Greatest**: No integer larger than g divides both a and b. Equivalently, for all d that divide both a and b, d <= g.
+- **Greatest**: For all positive integers d, if d divides both a and b, then d divides g. This divisibility-based formulation is more amenable to SMT solving than the maximality formulation (d <= g), which requires nonlinear reasoning.
 - **Positive result**: g > 0 when both inputs are positive.
 
 ### Bezout properties
-- **Bezout identity**: a * x + b * y == g. This is the central invariant — it must hold at every iteration of the loop and be established as a postcondition.
-- **Coefficient existence**: For any two positive integers, Bezout coefficients exist.
+- **Bezout identity**: a * x + b * y == g. This is the central invariant — it must hold at every iteration of the loop and be established as a postcondition. Note that x and y may be negative.
+
+**Feasibility note**: The Bezout identity involves nonlinear arithmetic (variable-variable multiplication), which Z3 handles with incomplete heuristics. This benchmark may require lemma functions or calc blocks to guide the solver.
 
 ### Algorithm properties
 - **Termination**: The algorithm terminates because the remainder strictly decreases toward zero.
