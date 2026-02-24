@@ -185,6 +185,9 @@ When the mentor recommends rollback, the pipeline rewinds to Stage 2 with mentor
 | Hard | Ring Buffer | Modular arithmetic, wrap-around indexing |
 | Medium | Pipeline State Machine | Multi-element rollback, quantified closure invariant |
 | Hard | Balanced Parentheses | Stack-based algorithm, string processing |
+| Hard+ | Compositional Pipeline | Cross-function contract propagation (DafnyComp-inspired) |
+| Hard+ | Extended GCD | Bezout identity loop invariant, nonlinear arithmetic |
+| Hard+ | Insertion Sort (Permutation) | Ghost multiset tracking, permutation proof |
 
 ### 5.2 Model Configurations
 

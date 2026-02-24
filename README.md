@@ -115,6 +115,9 @@ Key flags:
 | binary_search | Hard | Loop invariant with narrowing bounds |
 | ring_buffer | Hard | Modular arithmetic, wrap-around indexing |
 | balanced_parentheses | Hard | Stack-based algorithm, string processing |
+| compositional_pipeline | Hard+ | Cross-function contract propagation |
+| extended_gcd | Hard+ | Bezout identity loop invariant |
+| insertion_sort | Hard+ | Ghost multiset permutation proof |
 
 ## Research
 
