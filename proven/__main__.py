@@ -21,6 +21,7 @@ def main() -> int:
     # --- run ---
     run_parser = subparsers.add_parser("run", help="Run the pipeline on a requirements file")
     run_parser.add_argument("requirements_file", type=Path, help="Path to requirements (.md)")
+    run_parser.add_argument("--model", default=None, help="LLM model (overrides LLM_MODEL env var)")
     run_parser.add_argument(
         "--mode", choices=["assisted", "autonomous", "semi"], default="assisted",
         help="Interaction mode (default: assisted)",
@@ -48,11 +49,17 @@ def main() -> int:
         "--best-of-n", type=int, default=3,
         help="Fresh samples after adaptive retries exhaust (0 to disable, default: 3)",
     )
+    run_parser.add_argument(
+        "--strategy", choices=["full", "light", "iterative", "auto"], default="auto",
+        help="Pipeline strategy: full (all scaffolding), light (simplified decomposition), "
+             "iterative (generate-verify-fix), auto (select from model). Default: auto",
+    )
 
     # --- resume ---
     resume_parser = subparsers.add_parser("resume", help="Resume a pipeline from an existing workspace")
     resume_parser.add_argument("workspace_dir", type=Path, help="Path to existing workspace")
     resume_parser.add_argument("--from-stage", type=int, choices=[1, 2, 3, 4, 5], default=None)
+    resume_parser.add_argument("--model", default=None, help="LLM model (overrides LLM_MODEL env var)")
     resume_parser.add_argument("--mode", choices=["assisted", "autonomous", "semi"], default="assisted")
     resume_parser.add_argument("--max-retries", type=int, default=3)
     resume_parser.add_argument("--target", choices=["py", "cs", "go", "java", "js"], default="py")
@@ -61,6 +68,9 @@ def main() -> int:
     resume_parser.add_argument("--no-decompose", action="store_true")
     resume_parser.add_argument("--rollback-budget", type=int, default=1)
     resume_parser.add_argument("--best-of-n", type=int, default=3)
+    resume_parser.add_argument(
+        "--strategy", choices=["full", "light", "iterative", "auto"], default="auto",
+    )
 
     # --- check ---
     subparsers.add_parser("check", help="Check that Dafny is installed")
@@ -84,7 +94,14 @@ def main() -> int:
         decompose_enabled=not getattr(args, "no_decompose", False),
         rollback_budget=getattr(args, "rollback_budget", 1),
         best_of_n=getattr(args, "best_of_n", 3),
+        model=getattr(args, "model", None),
     )
+
+    # Apply adaptive strategy based on model profile
+    from .strategy import resolve_profile, apply_strategy
+    strategy_override = getattr(args, "strategy", "auto")
+    profile = resolve_profile(config.llm_model, strategy_override)
+    config = apply_strategy(config, profile)
 
     if args.command == "run":
         return run_pipeline(config, args.requirements_file)

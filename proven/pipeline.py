@@ -47,6 +47,7 @@ def run_pipeline(config: Config, requirements_file: Path) -> int:
             "llm_model": config.llm_model,
             "target": config.target,
             "max_retries": config.max_retries,
+            "strategy": config.strategy_name,
         },
     )
     log = InteractionLog(state.workspace_path)
@@ -55,7 +56,7 @@ def run_pipeline(config: Config, requirements_file: Path) -> int:
     print(f"Proven v0.1.0 — LLM-driven stepwise refinement")
     print(f"Workspace: {state.workspace_path}")
     print(f"Mode: {config.mode} | Model: {config.llm_model} | Target: {config.target}")
-    print(f"Max retries: {config.max_retries}")
+    print(f"Strategy: {config.strategy_name} | Max retries: {config.max_retries}")
 
     return _execute_stages(state, config, llm, log, interaction)
 
@@ -110,6 +111,14 @@ def _execute_stages(
             continue
         if status == "skipped":
             print(f"\n  Stage {stage_num} ({stage_name}): skipped")
+            stage_idx += 1
+            continue
+
+        # Skip Stage 1 in iterative mode (model chooses its own decomposition)
+        if stage_num == 1 and config.skip_stage1:
+            state.stage_status[1] = "skipped"
+            state.save()
+            print(f"\n  Stage 1 (Requirements Capture): skipped ({config.strategy_name} strategy)")
             stage_idx += 1
             continue
 

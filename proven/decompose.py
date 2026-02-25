@@ -278,6 +278,24 @@ def fix_missing_semicolons(code: str) -> tuple[str, list[str]]:
     return '\n'.join(new_lines), changes
 
 
+def fix_axiom_attributes(code: str) -> tuple[str, list[str]]:
+    """Remove {:axiom} attributes that prevent compilation.
+
+    {:axiom} tells Dafny to accept a function/lemma without proof body.
+    This passes `dafny verify` but CANNOT compile to target languages
+    (dafny build fails). Strip the attribute so the verifier requires
+    a real proof body, which forces the implementation stage to provide one.
+    """
+    changes: list[str] = []
+    if '{:axiom}' in code:
+        count = code.count('{:axiom}')
+        code = code.replace('{:axiom}', '')
+        # Clean up resulting double spaces
+        code = re.sub(r'  +', ' ', code)
+        changes.append(f"Removed {count} {{:axiom}} attribute(s) (prevents compilation)")
+    return code, changes
+
+
 def fix_dafny_syntax(code: str) -> tuple[str, list[str]]:
     """Run syntax-level fixes that apply before dafny resolve.
 
@@ -286,6 +304,9 @@ def fix_dafny_syntax(code: str) -> tuple[str, list[str]]:
     which apply between Stage 2 and 3.
     """
     all_changes: list[str] = []
+
+    code, changes = fix_axiom_attributes(code)
+    all_changes.extend(changes)
 
     code, changes = fix_generic_brackets(code)
     all_changes.extend(changes)

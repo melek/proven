@@ -513,6 +513,86 @@ Output the COMPLETE fixed Dafny specification. No markdown fences, no explanatio
 
 
 # ─────────────────────────────────────────────────────────────
+# Stage 1: Light mode constraint (max 3 operations)
+# ─────────────────────────────────────────────────────────────
+
+STAGE1_LIGHT_SUFFIX = """
+
+IMPORTANT: Identify at most 3 top-level operations. Do NOT decompose algorithms \
+into sub-operations (e.g., do NOT split 'sort' into 'find_position' + 'insert' + \
+'shift'). Each operation should correspond to a complete user-facing action."""
+
+
+# ─────────────────────────────────────────────────────────────
+# Iterative mode prompts (generate spec+impl in one pass)
+# ─────────────────────────────────────────────────────────────
+
+ITERATIVE_SYSTEM = """\
+You are an expert Dafny programmer. Given natural language requirements, \
+write a complete Dafny program with:
+- Class or datatype definitions
+- Method signatures with requires (preconditions) and ensures (postconditions)
+- Complete method bodies with loop invariants and decreases clauses
+- All code necessary to pass `dafny verify`
+
+Output ONLY the Dafny code. No markdown fences, no explanation."""
+
+ITERATIVE_USER = """\
+Write a complete Dafny program implementing the following requirements. \
+Include all type definitions, method signatures with requires/ensures, \
+and complete method bodies with loop invariants and decreases clauses.
+
+Requirements:
+{requirements_text}"""
+
+ITERATIVE_RETRY = """\
+The previous Dafny code failed verification.
+
+Previous code:
+{previous_code}
+
+Dafny errors:
+{errors}
+
+Fix all errors and output the COMPLETE corrected Dafny file.
+Do NOT remove or weaken any specifications — preserve all requires/ensures clauses.
+Output ONLY the Dafny code. No markdown fences, no explanation."""
+
+
+# ─────────────────────────────────────────────────────────────
+# Stage 3: Minimal system prompt (no Dafny syntax reference)
+# ─────────────────────────────────────────────────────────────
+
+STAGE3_SYSTEM_MINIMAL = """\
+You are a verified programming expert using Dafny.
+Given a Dafny specification (types, signatures, pre/postconditions), your task is to:
+1. Fill in method bodies with correct implementations
+2. Add loop invariants for any loops
+3. Add decreases clauses for loops and recursive calls
+4. Add intermediate assertions to guide Z3 where needed
+5. Add lemmas if the verifier needs help connecting proof steps
+
+The output must pass `dafny verify` (full verification).
+
+Guidelines:
+- Preserve ALL existing requires, ensures, reads, and modifies clauses exactly
+- Do not change method signatures or type definitions
+- Do not weaken preconditions or strengthen postconditions
+- Prefer simple implementations that are easy for Z3 to verify
+- For sequences, prefer functional operations (seq + [x]) over imperative mutation
+- Use calc blocks for complex proof chains if needed
+
+Output ONLY the complete Dafny file. No markdown fences, no explanation."""
+
+
+def build_stage3_system(include_reference: bool = True) -> str:
+    """Return the Stage 3 system prompt, optionally without Dafny syntax reference."""
+    if include_reference:
+        return STAGE3_SYSTEM
+    return STAGE3_SYSTEM_MINIMAL
+
+
+# ─────────────────────────────────────────────────────────────
 # Temperature strategies for retries
 # ─────────────────────────────────────────────────────────────
 

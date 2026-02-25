@@ -34,6 +34,14 @@ class Config:
     workspace_root: Path
     dafny_path: str
 
+    # Strategy (set by apply_strategy, not directly by user)
+    skip_stage1: bool = False           # Skip Stage 1 requirements capture
+    merge_spec_impl: bool = False       # Merge Stages 2+3 into single generation
+    light_stage1: bool = False          # Simplified Stage 1 (max 3 operations)
+    max_output_tokens: int = 8192       # LLM completion token limit
+    include_dafny_reference: bool = True  # Include Dafny syntax guide in prompts
+    strategy_name: str = "full"         # For logging/display
+
 
 def load_config(
     mode: str = "assisted",
@@ -45,6 +53,7 @@ def load_config(
     decompose_enabled: bool = True,
     rollback_budget: int = 1,
     best_of_n: int = 3,
+    model: str | None = None,
 ) -> Config:
     """Load config from .env + env vars, with explicit args taking priority."""
     from dotenv import load_dotenv
@@ -54,7 +63,7 @@ def load_config(
     return Config(
         llm_base_url=os.environ.get("LLM_BASE_URL", "https://api.openai.com/v1"),
         llm_api_key=os.environ.get("LLM_API_KEY", ""),
-        llm_model=os.environ.get("LLM_MODEL", "gpt-4o"),
+        llm_model=model or os.environ.get("LLM_MODEL", "claude-sonnet-4-6"),
         mode=mode,
         max_retries=max_retries,
         target=target,

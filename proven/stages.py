@@ -12,12 +12,14 @@ from .config import Config
 from .llm import LLMClient
 from .workspace import RunState, InteractionLog
 from .prompts import (
-    STAGE1_SYSTEM, STAGE1_USER,
+    STAGE1_SYSTEM, STAGE1_USER, STAGE1_LIGHT_SUFFIX,
     STAGE2_SYSTEM, STAGE2_USER, STAGE2_RETRY_USER, STAGE2_ROLLBACK_USER,
     STAGE3_SYSTEM, STAGE3_USER,
     STAGE4_RETRY_USER, STAGE4_RETRY_USER_WITH_MENTOR,
+    ITERATIVE_SYSTEM, ITERATIVE_USER, ITERATIVE_RETRY,
     strip_code_fences, extract_json, check_spec_integrity,
     get_retry_temperature, get_adaptive_temperature, BEST_OF_N_TEMP,
+    build_stage3_system,
 )
 from .decompose import decompose_spec, fix_dafny_syntax
 from .mentor import MentorState, record_attempt, detect_stuck, get_mentor_directive, _parse_verified_count
@@ -48,13 +50,14 @@ def _llm_call(
     user: str,
     temperature: float = 0.2,
     verbose: bool = False,
+    max_tokens: int = 8192,
 ) -> str:
     """Make an LLM call and log it."""
     messages = [{"role": "user", "content": user}]
     log.log_llm_request(stage, attempt, messages)
     if verbose:
-        print(f"\n  [LLM] Calling model (temp={temperature})...")
-    resp = llm.complete(system, user, temperature=temperature)
+        print(f"\n  [LLM] Calling model (temp={temperature}, max_tokens={max_tokens})...")
+    resp = llm.complete(system, user, temperature=temperature, max_tokens=max_tokens)
     log.log_llm_response(stage, attempt, resp.content, resp.usage)
     if verbose:
         print(f"  [LLM] Got {len(resp.content)} chars, {resp.usage.get('total_tokens', '?')} tokens")
@@ -70,12 +73,13 @@ def _llm_call_with_history(
     messages: list[dict],
     temperature: float = 0.2,
     verbose: bool = False,
+    max_tokens: int = 8192,
 ) -> str:
     """Make an LLM call with conversation history and log it."""
     log.log_llm_request(stage, attempt, messages)
     if verbose:
-        print(f"\n  [LLM] Calling model with history ({len(messages)} msgs, temp={temperature})...")
-    resp = llm.complete_with_history(system, messages, temperature=temperature)
+        print(f"\n  [LLM] Calling model with history ({len(messages)} msgs, temp={temperature}, max_tokens={max_tokens})...")
+    resp = llm.complete_with_history(system, messages, temperature=temperature, max_tokens=max_tokens)
     log.log_llm_response(stage, attempt, resp.content, resp.usage)
     if verbose:
         print(f"  [LLM] Got {len(resp.content)} chars, {resp.usage.get('total_tokens', '?')} tokens")
@@ -94,6 +98,8 @@ def stage_1_requirements(
     requirements_text = req_path.read_text(encoding="utf-8")
 
     prompt = STAGE1_USER.format(requirements_text=requirements_text)
+    if config.light_stage1:
+        prompt += STAGE1_LIGHT_SUFFIX
 
     for attempt in range(config.max_retries + 1):
         raw = _llm_call(
@@ -101,6 +107,7 @@ def stage_1_requirements(
             system=STAGE1_SYSTEM, user=prompt,
             temperature=get_retry_temperature(attempt),
             verbose=config.verbose,
+            max_tokens=config.max_output_tokens,
         )
 
         try:
@@ -133,10 +140,99 @@ def stage_1_requirements(
 # Stage 2: Formal Specification
 # ─────────────────────────────────────────────────────────────
 
+def _stage_2_iterative(
+    state: RunState, config: Config, llm: LLMClient, log: InteractionLog
+) -> StageResult:
+    """Iterative mode: generate complete Dafny spec+impl from raw requirements.
+
+    Reads the .md requirements directly (bypasses Stage 1 JSON), generates
+    a complete Dafny file with specifications AND implementations, then
+    validates with dafny resolve. On success, writes to both 02_specification.dfy
+    and 03_implementation.dfy so Stage 3 can be skipped.
+    """
+    req_path = Path(state.requirements_file)
+    requirements_text = req_path.read_text(encoding="utf-8")
+
+    prompt = ITERATIVE_USER.format(requirements_text=requirements_text)
+    last_attempt_code = None
+    last_errors = None
+
+    for attempt in range(config.max_retries + 1):
+        if attempt == 0:
+            raw = _llm_call(
+                llm, log, stage=2, attempt=attempt,
+                system=ITERATIVE_SYSTEM, user=prompt,
+                temperature=get_retry_temperature(attempt),
+                verbose=config.verbose,
+                max_tokens=config.max_output_tokens,
+            )
+        else:
+            retry_prompt = ITERATIVE_RETRY.format(
+                previous_code=last_attempt_code,
+                errors=last_errors,
+            )
+            raw = _llm_call(
+                llm, log, stage=2, attempt=attempt,
+                system=ITERATIVE_SYSTEM, user=retry_prompt,
+                temperature=get_retry_temperature(attempt),
+                verbose=config.verbose,
+                max_tokens=config.max_output_tokens,
+            )
+
+        dafny_code = strip_code_fences(raw)
+
+        # Fix common LLM syntax errors
+        fixed_code, syntax_fixes = fix_dafny_syntax(dafny_code)
+        if syntax_fixes:
+            dafny_code = fixed_code
+            for fix in syntax_fixes:
+                print(f"  [Syntax Fix] {fix}")
+
+        spec_file = state.workspace_path / "02_specification.dfy"
+        spec_file.write_text(dafny_code, encoding="utf-8")
+
+        # Validate with dafny resolve (parse + typecheck)
+        result = dafny_tool.resolve(spec_file, dafny_path=config.dafny_path)
+        log.log_tool(2, result.command, result.exit_code, result.stdout, result.stderr)
+
+        if result.success:
+            # In iterative mode, spec and impl are the same file
+            impl_file = state.workspace_path / "03_implementation.dfy"
+            impl_file.write_text(dafny_code, encoding="utf-8")
+
+            # Mark Stage 3 as skipped (spec+impl already merged)
+            state.stage_status[3] = "skipped"
+            state.save()
+
+            log.log_stage_complete(2, "success", str(spec_file))
+            return StageResult(
+                outcome=StageOutcome.SUCCESS,
+                output_file=spec_file,
+                message=f"Iterative spec+impl passes dafny resolve ({attempt + 1} attempt(s))",
+                attempts=attempt + 1,
+            )
+
+        print(f"  Attempt {attempt + 1}: dafny resolve failed, retrying...")
+        if config.verbose:
+            print(f"  Errors: {result.error_message[:500]}")
+        last_attempt_code = dafny_code
+        last_errors = result.error_message
+
+    return StageResult(
+        outcome=StageOutcome.FAILED,
+        output_file=state.workspace_path / "02_specification.dfy",
+        message=f"Iterative spec+impl failed dafny resolve after {config.max_retries + 1} attempts",
+        attempts=config.max_retries + 1,
+    )
+
+
 def stage_2_specification(
     state: RunState, config: Config, llm: LLMClient, log: InteractionLog
 ) -> StageResult:
     """Structured requirements -> Dafny specification (no bodies)."""
+    if config.merge_spec_impl:
+        return _stage_2_iterative(state, config, llm, log)
+
     req_json = (state.workspace_path / "01_requirements.json").read_text(encoding="utf-8")
 
     # Check for rollback guidance from mentor
@@ -164,6 +260,7 @@ def stage_2_specification(
                 system=STAGE2_SYSTEM, user=prompt,
                 temperature=get_retry_temperature(attempt),
                 verbose=config.verbose,
+                max_tokens=config.max_output_tokens,
             )
         else:
             retry_prompt = STAGE2_RETRY_USER.format(
@@ -175,6 +272,7 @@ def stage_2_specification(
                 system=STAGE2_SYSTEM, user=retry_prompt,
                 temperature=get_retry_temperature(attempt),
                 verbose=config.verbose,
+                max_tokens=config.max_output_tokens,
             )
 
         dafny_code = strip_code_fences(raw)
@@ -247,13 +345,15 @@ def stage_3_implementation(
                 if config.verbose:
                     print(f"  [Decompose] Errors: {resolve_result.error_message[:300]}")
 
+    stage3_system = build_stage3_system(config.include_dafny_reference)
     prompt = STAGE3_USER.format(specification_dfy=spec_code)
 
     raw = _llm_call(
         llm, log, stage=3, attempt=0,
-        system=STAGE3_SYSTEM, user=prompt,
+        system=stage3_system, user=prompt,
         temperature=get_retry_temperature(0),
         verbose=config.verbose,
+        max_tokens=config.max_output_tokens,
     )
 
     dafny_code = strip_code_fences(raw)
@@ -310,6 +410,12 @@ def stage_4_proof_discharge(
     current_code = impl_file.read_text(encoding="utf-8")
     original_spec = spec_file.read_text(encoding="utf-8")
 
+    # Choose system prompt based on strategy
+    if config.merge_spec_impl:
+        stage4_system = ITERATIVE_SYSTEM
+    else:
+        stage4_system = build_stage3_system(config.include_dafny_reference)
+
     # Check if it already verifies (stage 3 succeeded)
     result = dafny_tool.verify(impl_file, dafny_path=config.dafny_path)
     if result.success:
@@ -329,8 +435,14 @@ def stage_4_proof_discharge(
     attempts_dir.mkdir(exist_ok=True)
 
     # Build conversation history for the retry loop
+    if config.merge_spec_impl:
+        # Iterative mode: conversation started from raw requirements
+        requirements_text = Path(state.requirements_file).read_text(encoding="utf-8")
+        initial_prompt = ITERATIVE_USER.format(requirements_text=requirements_text)
+    else:
+        initial_prompt = STAGE3_USER.format(specification_dfy=original_spec)
     conversation: list[dict] = [
-        {"role": "user", "content": STAGE3_USER.format(specification_dfy=original_spec)},
+        {"role": "user", "content": initial_prompt},
         {"role": "assistant", "content": current_code},
     ]
 
@@ -392,7 +504,7 @@ def stage_4_proof_discharge(
         print(f"  Retry {attempt}/{config.max_retries} (temp={temperature:.1f}"
               f"{f', stuck={stuck_cat_str}' if stuck_cat_str else ''})...")
 
-        # Choose prompt template based on mentor directive
+        # Choose prompt template based on strategy and mentor directive
         if active_directive_text:
             retry_prompt = STAGE4_RETRY_USER_WITH_MENTOR.format(
                 mentor_directive=active_directive_text,
@@ -400,6 +512,11 @@ def stage_4_proof_discharge(
                 errors=errors,
             )
             active_directive_text = None  # Consume after one use
+        elif config.merge_spec_impl:
+            retry_prompt = ITERATIVE_RETRY.format(
+                previous_code=current_code,
+                errors=errors,
+            )
         else:
             retry_prompt = STAGE4_RETRY_USER.format(
                 previous_attempt=current_code,
@@ -410,9 +527,10 @@ def stage_4_proof_discharge(
 
         raw = _llm_call_with_history(
             llm, log, stage=4, attempt=attempt,
-            system=STAGE3_SYSTEM, messages=conversation,
+            system=stage4_system, messages=conversation,
             temperature=temperature,
             verbose=config.verbose,
+            max_tokens=config.max_output_tokens,
         )
 
         new_code = strip_code_fences(raw)
@@ -472,13 +590,18 @@ def stage_4_proof_discharge(
         bon_dir.mkdir(exist_ok=True)
 
         for sample in range(config.best_of_n):
-            sample_prompt = STAGE3_USER.format(specification_dfy=original_spec)
+            if config.merge_spec_impl:
+                requirements_text = Path(state.requirements_file).read_text(encoding="utf-8")
+                sample_prompt = ITERATIVE_USER.format(requirements_text=requirements_text)
+            else:
+                sample_prompt = STAGE3_USER.format(specification_dfy=original_spec)
 
             raw = _llm_call(
                 llm, log, stage=4, attempt=config.max_retries + 1 + sample,
-                system=STAGE3_SYSTEM, user=sample_prompt,
+                system=stage4_system, user=sample_prompt,
                 temperature=BEST_OF_N_TEMP,
                 verbose=config.verbose,
+                max_tokens=config.max_output_tokens,
             )
             sample_code = strip_code_fences(raw)
 
