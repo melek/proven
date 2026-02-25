@@ -1,0 +1,284 @@
+[
+  {
+    "problem": "compositional_pipeline",
+    "difficulty": "hard+",
+    "verified": true,
+    "compiled": false,
+    "stage_status": {
+      "1": "completed",
+      "2": "completed",
+      "3": "completed",
+      "4": "completed",
+      "5": "failed"
+    },
+    "wall_time_sec": 103.0,
+    "exit_code": 1,
+    "condition": "P-sonnet",
+    "label": "Proven + Sonnet"
+  },
+  {
+    "problem": "extended_gcd",
+    "difficulty": "hard+",
+    "verified": true,
+    "compiled": true,
+    "stage_status": {
+      "1": "completed",
+      "2": "completed",
+      "3": "recovered",
+      "4": "completed",
+      "5": "completed"
+    },
+    "wall_time_sec": 248.8,
+    "exit_code": 0,
+    "condition": "P-sonnet",
+    "label": "Proven + Sonnet"
+  },
+  {
+    "problem": "insertion_sort",
+    "difficulty": "hard+",
+    "verified": false,
+    "compiled": false,
+    "stage_status": {
+      "1": "completed",
+      "2": "failed",
+      "3": "pending",
+      "4": "pending",
+      "5": "pending"
+    },
+    "wall_time_sec": 161.9,
+    "exit_code": 1,
+    "condition": "P-sonnet",
+    "label": "Proven + Sonnet"
+  },
+  {
+    "problem": "red_black_tree",
+    "difficulty": "expert",
+    "verified": false,
+    "compiled": false,
+    "stage_status": {
+      "1": "completed",
+      "2": "completed",
+      "3": "failed",
+      "4": "in_progress",
+      "5": "pending"
+    },
+    "wall_time_sec": 900.0,
+    "exit_code": -1,
+    "condition": "P-sonnet",
+    "label": "Proven + Sonnet"
+  },
+  {
+    "problem": "compositional_triple",
+    "difficulty": "expert",
+    "verified": false,
+    "compiled": false,
+    "stage_status": {
+      "1": "completed",
+      "2": "completed",
+      "3": "failed",
+      "4": "in_progress",
+      "5": "pending"
+    },
+    "wall_time_sec": 900.0,
+    "exit_code": -1,
+    "condition": "P-sonnet",
+    "label": "Proven + Sonnet"
+  },
+  {
+    "problem": "topological_sort",
+    "difficulty": "expert",
+    "verified": false,
+    "compiled": false,
+    "stage_status": {
+      "1": "completed",
+      "2": "failed",
+      "3": "pending",
+      "4": "pending",
+      "5": "pending"
+    },
+    "wall_time_sec": 176.4,
+    "exit_code": 1,
+    "condition": "P-sonnet",
+    "label": "Proven + Sonnet"
+  },
+  {
+    "problem": "compositional_pipeline",
+    "verified": false,
+    "compiled": false,
+    "wall_time_sec": 106.5,
+    "exit_code": 1,
+    "condition": "P-local",
+    "difficulty": "hard+",
+    "label": "Proven + Local"
+  },
+  {
+    "problem": "extended_gcd",
+    "verified": false,
+    "compiled": false,
+    "wall_time_sec": 46.1,
+    "exit_code": 1,
+    "condition": "P-local",
+    "difficulty": "hard+",
+    "label": "Proven + Local"
+  },
+  {
+    "problem": "insertion_sort",
+    "verified": false,
+    "compiled": false,
+    "wall_time_sec": 103.9,
+    "exit_code": 1,
+    "condition": "P-local",
+    "difficulty": "hard+",
+    "label": "Proven + Local"
+  },
+  {
+    "problem": "red_black_tree",
+    "verified": false,
+    "compiled": false,
+    "wall_time_sec": 77.8,
+    "exit_code": 1,
+    "condition": "P-local",
+    "difficulty": "expert",
+    "label": "Proven + Local"
+  },
+  {
+    "problem": "compositional_triple",
+    "verified": false,
+    "compiled": false,
+    "wall_time_sec": 118.8,
+    "exit_code": 1,
+    "condition": "P-local",
+    "difficulty": "expert",
+    "label": "Proven + Local"
+  },
+  {
+    "problem": "topological_sort",
+    "verified": false,
+    "compiled": false,
+    "wall_time_sec": 76.3,
+    "exit_code": 1,
+    "condition": "P-local",
+    "difficulty": "expert",
+    "label": "Proven + Local"
+  },
+  {
+    "problem": "compositional_pipeline",
+    "verified": true,
+    "compiled": true,
+    "wall_time_sec": 17.8,
+    "exit_code": 0,
+    "condition": "B-sonnet",
+    "difficulty": "hard+",
+    "label": "Baseline + Sonnet"
+  },
+  {
+    "problem": "extended_gcd",
+    "verified": false,
+    "compiled": false,
+    "wall_time_sec": 501.1,
+    "exit_code": 1,
+    "condition": "B-sonnet",
+    "difficulty": "hard+",
+    "label": "Baseline + Sonnet"
+  },
+  {
+    "problem": "insertion_sort",
+    "verified": true,
+    "compiled": true,
+    "wall_time_sec": 238.2,
+    "exit_code": 0,
+    "condition": "B-sonnet",
+    "difficulty": "hard+",
+    "label": "Baseline + Sonnet"
+  },
+  {
+    "problem": "red_black_tree",
+    "verified": false,
+    "compiled": false,
+    "wall_time_sec": 714.8,
+    "exit_code": 1,
+    "condition": "B-sonnet",
+    "difficulty": "expert",
+    "label": "Baseline + Sonnet"
+  },
+  {
+    "problem": "compositional_triple",
+    "verified": true,
+    "compiled": true,
+    "wall_time_sec": 476.5,
+    "exit_code": 0,
+    "condition": "B-sonnet",
+    "difficulty": "expert",
+    "label": "Baseline + Sonnet"
+  },
+  {
+    "problem": "topological_sort",
+    "verified": false,
+    "compiled": false,
+    "wall_time_sec": 886.0,
+    "exit_code": 1,
+    "condition": "B-sonnet",
+    "difficulty": "expert",
+    "label": "Baseline + Sonnet"
+  },
+  {
+    "problem": "compositional_pipeline",
+    "tests_pass": true,
+    "compiled": true,
+    "wall_time_sec": 23.1,
+    "exit_code": 0,
+    "condition": "T-local",
+    "difficulty": "hard+",
+    "label": "TDD + Local"
+  },
+  {
+    "problem": "extended_gcd",
+    "tests_pass": false,
+    "compiled": false,
+    "wall_time_sec": 67.5,
+    "exit_code": 1,
+    "condition": "T-local",
+    "difficulty": "hard+",
+    "label": "TDD + Local"
+  },
+  {
+    "problem": "insertion_sort",
+    "tests_pass": false,
+    "compiled": false,
+    "wall_time_sec": 73.0,
+    "exit_code": 1,
+    "condition": "T-local",
+    "difficulty": "hard+",
+    "label": "TDD + Local"
+  },
+  {
+    "problem": "red_black_tree",
+    "tests_pass": false,
+    "compiled": false,
+    "wall_time_sec": 195.1,
+    "exit_code": 1,
+    "condition": "T-local",
+    "difficulty": "expert",
+    "label": "TDD + Local"
+  },
+  {
+    "problem": "compositional_triple",
+    "tests_pass": false,
+    "compiled": false,
+    "wall_time_sec": 67.3,
+    "exit_code": 1,
+    "condition": "T-local",
+    "difficulty": "expert",
+    "label": "TDD + Local"
+  },
+  {
+    "problem": "topological_sort",
+    "tests_pass": true,
+    "compiled": true,
+    "wall_time_sec": 24.0,
+    "exit_code": 0,
+    "condition": "T-local",
+    "difficulty": "expert",
+    "label": "TDD + Local"
+  }
+]

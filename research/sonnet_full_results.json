@@ -1,0 +1,227 @@
+[
+  {
+    "problem": "bounded_counter",
+    "difficulty": "simple",
+    "verified": true,
+    "compiled": true,
+    "stage_status": {
+      "1": "completed",
+      "2": "completed",
+      "3": "completed",
+      "4": "completed",
+      "5": "completed"
+    },
+    "wall_time_sec": 76.1,
+    "exit_code": 0
+  },
+  {
+    "problem": "stack",
+    "difficulty": "simple",
+    "verified": true,
+    "compiled": true,
+    "stage_status": {
+      "1": "completed",
+      "2": "completed",
+      "3": "recovered",
+      "4": "completed",
+      "5": "completed"
+    },
+    "wall_time_sec": 71.2,
+    "exit_code": 0
+  },
+  {
+    "problem": "priority_queue",
+    "difficulty": "medium",
+    "verified": true,
+    "compiled": true,
+    "stage_status": {
+      "1": "completed",
+      "2": "completed",
+      "3": "recovered",
+      "4": "completed",
+      "5": "completed"
+    },
+    "wall_time_sec": 87.0,
+    "exit_code": 0
+  },
+  {
+    "problem": "sorted_list",
+    "difficulty": "medium",
+    "verified": true,
+    "compiled": true,
+    "stage_status": {
+      "1": "completed",
+      "2": "completed",
+      "3": "recovered",
+      "4": "completed",
+      "5": "completed"
+    },
+    "wall_time_sec": 97.5,
+    "exit_code": 0
+  },
+  {
+    "problem": "unique_set",
+    "difficulty": "medium",
+    "verified": true,
+    "compiled": true,
+    "stage_status": {
+      "1": "completed",
+      "2": "completed",
+      "3": "recovered",
+      "4": "completed",
+      "5": "completed"
+    },
+    "wall_time_sec": 179.6,
+    "exit_code": 0
+  },
+  {
+    "problem": "pipeline_state",
+    "difficulty": "medium",
+    "verified": true,
+    "compiled": true,
+    "stage_status": {
+      "1": "completed",
+      "2": "completed",
+      "3": "recovered",
+      "4": "completed",
+      "5": "completed"
+    },
+    "wall_time_sec": 62.6,
+    "exit_code": 0
+  },
+  {
+    "problem": "binary_search",
+    "difficulty": "hard",
+    "verified": true,
+    "compiled": true,
+    "stage_status": {
+      "1": "completed",
+      "2": "completed",
+      "3": "recovered",
+      "4": "completed",
+      "5": "completed"
+    },
+    "wall_time_sec": 91.8,
+    "exit_code": 0
+  },
+  {
+    "problem": "ring_buffer",
+    "difficulty": "hard",
+    "verified": true,
+    "compiled": true,
+    "stage_status": {
+      "1": "completed",
+      "2": "completed",
+      "3": "completed",
+      "4": "completed",
+      "5": "completed"
+    },
+    "wall_time_sec": 76.0,
+    "exit_code": 0
+  },
+  {
+    "problem": "balanced_parentheses",
+    "difficulty": "hard",
+    "verified": false,
+    "compiled": false,
+    "stage_status": {
+      "1": "completed",
+      "2": "completed",
+      "3": "failed",
+      "4": "failed",
+      "5": "pending"
+    },
+    "wall_time_sec": 228.0,
+    "exit_code": 1
+  },
+  {
+    "problem": "compositional_pipeline",
+    "difficulty": "hard+",
+    "verified": true,
+    "compiled": false,
+    "stage_status": {
+      "1": "completed",
+      "2": "completed",
+      "3": "completed",
+      "4": "completed",
+      "5": "failed"
+    },
+    "wall_time_sec": 103.0,
+    "exit_code": 1
+  },
+  {
+    "problem": "extended_gcd",
+    "difficulty": "hard+",
+    "verified": true,
+    "compiled": true,
+    "stage_status": {
+      "1": "completed",
+      "2": "completed",
+      "3": "recovered",
+      "4": "completed",
+      "5": "completed"
+    },
+    "wall_time_sec": 248.8,
+    "exit_code": 0
+  },
+  {
+    "problem": "insertion_sort",
+    "difficulty": "hard+",
+    "verified": false,
+    "compiled": false,
+    "stage_status": {
+      "1": "completed",
+      "2": "failed",
+      "3": "pending",
+      "4": "pending",
+      "5": "pending"
+    },
+    "wall_time_sec": 161.9,
+    "exit_code": 1
+  },
+  {
+    "problem": "red_black_tree",
+    "difficulty": "expert",
+    "verified": false,
+    "compiled": false,
+    "stage_status": {
+      "1": "completed",
+      "2": "completed",
+      "3": "failed",
+      "4": "in_progress",
+      "5": "pending"
+    },
+    "wall_time_sec": 900.0,
+    "exit_code": -1
+  },
+  {
+    "problem": "compositional_triple",
+    "difficulty": "expert",
+    "verified": false,
+    "compiled": false,
+    "stage_status": {
+      "1": "completed",
+      "2": "completed",
+      "3": "failed",
+      "4": "in_progress",
+      "5": "pending"
+    },
+    "wall_time_sec": 900.0,
+    "exit_code": -1
+  },
+  {
+    "problem": "topological_sort",
+    "difficulty": "expert",
+    "verified": false,
+    "compiled": false,
+    "stage_status": {
+      "1": "completed",
+      "2": "failed",
+      "3": "pending",
+      "4": "pending",
+      "5": "pending"
+    },
+    "wall_time_sec": 176.4,
+    "exit_code": 1
+  }
+]

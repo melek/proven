@@ -168,6 +168,67 @@ class BalancedParentheses:
     @staticmethod
     def CountClose(s: str) -> int:
         '''Return count of ')' characters in s.'''""",
+
+    "compositional_pipeline": """\
+class CompositionalPipeline:
+    @staticmethod
+    def DigitSum(n: int) -> int:
+        '''Return sum of decimal digits of n. Precondition: n >= 0.'''
+    @staticmethod
+    def ClassifyByDigitSum(values: list[int]) -> tuple[list[int], list[int]]:
+        '''Partition values into (even_sum, odd_sum) based on digit sum parity.
+        Precondition: all values >= 0.
+        Returns (even_list, odd_list) where every input element appears in exactly one.'''""",
+
+    "extended_gcd": """\
+class ExtendedGcd:
+    @staticmethod
+    def extended_gcd(a: int, b: int) -> tuple[int, int, int]:
+        '''Return (g, x, y) where g = gcd(a, b) and a*x + b*y == g.
+        Precondition: a > 0 and b > 0.'''""",
+
+    "insertion_sort": """\
+class InsertionSort:
+    @staticmethod
+    def sort(a: list[int]) -> list[int]:
+        '''Return a new list containing the same elements as a, sorted in non-decreasing order.'''
+    @staticmethod
+    def is_sorted(a: list[int]) -> bool:
+        '''Return whether a is sorted in non-decreasing order.'''""",
+
+    "red_black_tree": """\
+class RedBlackTree:
+    def __init__(self):
+        '''Initialize an empty red-black tree.'''
+    def Insert(self, key: int) -> None:
+        '''Insert key, maintaining all red-black invariants. No effect if key already present.'''
+    def Contains(self, key: int) -> bool:
+        '''Return whether key exists in the tree.'''
+    def Valid(self) -> bool:
+        '''Return whether the tree satisfies all red-black invariants:
+        BST ordering, root is black, no red-red parent-child, uniform black-height.'''""",
+
+    "compositional_triple": """\
+class CompositionalTriple:
+    @staticmethod
+    def Frequencies(s: list[int]) -> dict[int, int]:
+        '''Return map from each distinct value in s to its count.'''
+    @staticmethod
+    def FilterByFrequency(freq: dict[int, int], threshold: int) -> set[int]:
+        '''Return set of keys in freq with count >= threshold. Precondition: threshold >= 1.'''
+    @staticmethod
+    def CollectFiltered(s: list[int], keep: set[int]) -> list[int]:
+        '''Return subsequence of s containing only elements in keep, preserving order.'''""",
+
+    "topological_sort": """\
+class TopologicalSort:
+    @staticmethod
+    def topological_sort(graph: list[list[int]]) -> list[int]:
+        '''Return vertices in topological order. graph[u] = list of vertices u has edges to.
+        Precondition: graph is a DAG with valid vertex indices.'''
+    @staticmethod
+    def is_dag(graph: list[list[int]]) -> bool:
+        '''Return whether graph has no directed cycles.'''""",
 }
 
 
@@ -220,6 +281,12 @@ CLASS_NAMES = {
     "binary_search": "SortedArray",
     "ring_buffer": "RingBuffer",
     "balanced_parentheses": "BalancedParentheses",
+    "compositional_pipeline": "CompositionalPipeline",
+    "extended_gcd": "ExtendedGcd",
+    "insertion_sort": "InsertionSort",
+    "red_black_tree": "RedBlackTree",
+    "compositional_triple": "CompositionalTriple",
+    "topological_sort": "TopologicalSort",
 }
 
 
