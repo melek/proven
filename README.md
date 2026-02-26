@@ -1,24 +1,76 @@
 # Proven
 
-LLM-driven stepwise refinement with Dafny verification. Requirements go in, formally verified code comes out.
+**What if your AI-generated code came with a mathematical guarantee that it's correct?**
 
-Proven is a 5-stage pipeline that separates concerns existing generate-and-verify loops conflate: specification authoring, deterministic spec preprocessing, implementation, proof discharge, and code generation. The key insight: **specification quality is an optimizable parameter** — deterministic rewrites applied before the LLM sees the spec can dramatically improve verification success, especially for weaker models.
+Proven is a pipeline that turns plain-English requirements into formally verified, compiled code. Instead of generating code and hoping tests catch the bugs, Proven writes a mathematical specification first, simplifies it so the prover can handle it, then generates an implementation that is *proven correct by construction*. If the verifier accepts it, the code satisfies its specification — not probably, not for the inputs you tested, but for all possible inputs.
+
+## Why This Matters
+
+LLMs generate plausible code. Tests catch some bugs. But formal verification provides a different kind of guarantee: if a sorted-list implementation passes the Dafny verifier, it maintains sort order after *every possible* insertion — not just the thousand cases your test suite tried.
+
+The catch: getting LLMs to produce code that passes a formal verifier is hard. They write specifications that are correct but unnecessarily complex, then struggle to prove their own work. Proven's key insight is that **specification quality is an optimizable parameter**. Deterministic rewrites applied *before* the LLM sees the spec — converting existential quantifiers to membership checks, reordering postconditions, fixing common Dafny mistakes — can dramatically improve verification success.
 
 ## Results
 
-In experiments across 9 benchmark problems and 5 conditions, every implementation that was produced passes an independent test suite — regardless of whether it was generated through formal verification or TDD:
+### Ablation Study (N=216 runs)
 
-| Condition | Compiled | Own check\* | Independent tests |
-|-----------|----------|------------|-------------------|
-| Proven + qwen 14B (local) | 5/9 | 5/5 | 69/69 |
-| Proven + Claude Sonnet | 7/9 | 7/7 | 93/93 |
-| Baseline Dafny + Claude Sonnet | 9/9 | 9/9 | 129/129 |
-| TDD + qwen 14B (local) | 9/9 | 5/9 | 129/129 |
-| TDD + Claude Sonnet | 9/9 | 8/9 | 129/129 |
+How much does each pipeline component contribute? Tested across 9 benchmarks, 3 trials each, 2 models:
 
-\* "Own check" = each method's built-in validation (Dafny verifier for formal conditions, LLM-generated pytest for TDD).
+**Local model (qwen 14B) — where preprocessing matters most:**
 
-**Zero independent test failures across all conditions.** The methods differ in production rate and self-check reliability, not in functional correctness. All benchmarks are data structure problems; N=1 run per condition. See `research/paper-outline.md` for the full analysis including caveats.
+| Config | Success Rate | What's enabled |
+|--------|-------------|----------------|
+| A: Baseline | 19% | Just the retry loop |
+| B: +Mentor | 30% | + diagnostic advisor |
+| C: +Decompose | 41% | + spec preprocessing |
+| D: Full Pipeline | 33% | All components |
+
+Spec preprocessing (A vs C) more than doubles success rate for the local model (p=0.067, medium effect size).
+
+**Cloud model (Claude Sonnet) — where components interact:**
+
+| Config | Success Rate | What's enabled |
+|--------|-------------|----------------|
+| A: Baseline | 65% | Just the retry loop |
+| B: +Mentor | 67% | + diagnostic advisor |
+| C: +Decompose | 67% | + spec preprocessing |
+| D: Full Pipeline | 78% | All components |
+
+Sonnet's baseline is already strong, so no single component shows a big lift alone — but the full pipeline achieves the highest rate. The components help on different problems: preprocessing dominates medium-difficulty benchmarks (75% → 100%), while the full pipeline extends reach on hard problems (33% → 56%).
+
+### Correctness Comparison (N=5 conditions)
+
+Every implementation produced — whether by formal verification or TDD — passes an independent 129-test suite:
+
+| Condition | Compiled | Independent Tests |
+|-----------|----------|-------------------|
+| Proven + qwen 14B (local) | 5/9 | 69/69 |
+| Proven + Claude Sonnet | 7/9 | 93/93 |
+| Baseline Dafny + Claude Sonnet | 9/9 | 129/129 |
+| TDD + qwen 14B (local) | 9/9 | 129/129 |
+| TDD + Claude Sonnet | 9/9 | 129/129 |
+
+**Zero independent test failures across all conditions.** The methods differ in production rate, not correctness. Formal verification's value is the *strength* of the guarantee, not that it produces "more correct" code on well-understood problems.
+
+## How It Works
+
+```
+Requirements (English)
+    ↓
+Stage 1: Requirements Capture → structured JSON
+    ↓
+Stage 2: Formal Specification → Dafny contracts (no method bodies)
+    ↓
+Stage 2.5: Spec Preprocessing → deterministic rewrites (zero LLM calls)
+    ↓
+Stage 3: Implementation → Dafny code with proofs
+    ↓
+Stage 4: Proof Discharge → retry loop with adaptive strategies
+    ↓
+Stage 5: Code Generation → Python, C#, Go, Java, or JavaScript
+```
+
+Stage 2.5 is the novel part. It applies ~19 deterministic rewrite rules that transform the specification into a form the Z3 solver can handle more easily — without changing what the spec means. No LLM calls, no randomness, just pattern matching and rewriting.
 
 ## Quick Start
 
@@ -51,33 +103,6 @@ python -m proven run examples/bounded_counter.md --mode autonomous
 python -m proven check
 ```
 
-## Pipeline
-
-```
-Stage 1: Requirements Capture
-  NL requirements → structured JSON
-
-Stage 2: Formal Specification
-  JSON → Dafny spec (signatures + contracts, no bodies)
-  Validated: dafny resolve
-
-Stage 2.5: Specification Preprocessing (deterministic, zero LLM calls)
-  Rewrites: existential→membership, redundant ensures removal,
-  ensures reordering, generic bracket fixes, quantifier range fixes
-  Validated: dafny resolve on preprocessed spec
-
-Stage 3: Implementation
-  Preprocessed spec → Dafny implementation (method bodies + proofs)
-  Validated: dafny verify
-
-Stage 4: Proof Discharge
-  Retry loop with adaptive temperature, stuck detection, mentor advisor
-  Can trigger rollback to Stage 2
-
-Stage 5: Code Generation
-  Verified Dafny → Python / C# / Go / Java / JS via dafny build
-```
-
 ## CLI Reference
 
 ```bash
@@ -91,7 +116,6 @@ python -m proven resume <workspace_dir> [--from-stage N]
 python -m proven check
 ```
 
-Key flags:
 | Flag | Default | Description |
 |------|---------|-------------|
 | `--mode` | `assisted` | `assisted`, `semi`, or `autonomous` |
@@ -104,50 +128,47 @@ Key flags:
 
 ## Benchmarks
 
-| Problem | Difficulty | Key verification challenge |
-|---------|-----------|---------------------------|
-| bounded_counter | Simple | Single interval invariant |
-| stack | Simple | LIFO ordering, size tracking |
-| priority_queue | Medium | Sorted invariant, insertion |
-| sorted_list | Medium | Insert-in-order, membership |
-| unique_set | Medium | No-duplicates invariant |
-| pipeline_state | Medium | Multi-element rollback, quantified closure |
-| binary_search | Hard | Loop invariant with narrowing bounds |
-| ring_buffer | Hard | Modular arithmetic, wrap-around indexing |
-| balanced_parentheses | Hard | Stack-based algorithm, string processing |
-| compositional_pipeline | Hard+ | Cross-function contract propagation |
-| extended_gcd | Hard+ | Bezout identity loop invariant |
-| insertion_sort | Hard+ | Ghost multiset permutation proof |
-| red_black_tree | Expert | 4+ simultaneous invariants, rotations |
-| compositional_triple | Expert | 3-function contract propagation chain |
-| topological_sort | Expert | Graph DFS with ghost state, global ordering |
+| Problem | Difficulty | What's being verified |
+|---------|-----------|----------------------|
+| bounded_counter | Simple | Value stays within min/max bounds |
+| stack | Simple | Last-in-first-out ordering, size tracking |
+| priority_queue | Medium | Elements always come out sorted |
+| sorted_list | Medium | List stays sorted after every insert |
+| unique_set | Medium | No duplicate elements ever |
+| pipeline_state | Medium | Multi-step rollback preserves consistency |
+| binary_search | Hard | Search bounds narrow correctly every iteration |
+| ring_buffer | Hard | Wrap-around indexing with modular arithmetic |
+| balanced_parentheses | Hard | Parenthesis matching via stack algorithm |
+| compositional_pipeline | Hard+ | Contracts propagate correctly across functions |
+| extended_gcd | Hard+ | Bezout's identity holds through every loop iteration |
+| insertion_sort | Hard+ | Output is a permutation of input AND sorted |
+| red_black_tree | Expert | 4+ tree invariants maintained through rotations |
+| compositional_triple | Expert | 3-function contract chain |
+| topological_sort | Expert | Graph DFS produces valid global ordering |
 
 ## Research
 
-The `research/` directory contains experiment infrastructure:
+The `research/` directory contains the full experiment infrastructure:
 
 - `paper-outline.md` — Working paper draft
-- `experimental-plan.md` — Full methodology
-- `freestyle_agent.py` — Generate-verify-fix baseline agent (no pipeline structure)
-- `tdd_agent.py` — TDD baseline agent
-- `oracle_tests/` — 129 independent tests across 9 benchmarks (written separately from all generation methods)
-- `run_head_to_head.py` — Comparative experiment orchestration
-- `run_tdd_vs_formal.py` — TDD vs Formal comparison
-- `evaluate_oracle.py` — Independent test evaluation script
+- `run_ablation.py` — Ablation study runner (4 configs x 9 benchmarks x 3 trials x 2 models)
+- `analyze_ablation.py` — Statistical analysis (Fisher's exact test, effect sizes, confidence intervals)
+- `oracle_tests/` — 129 independent tests across 9 benchmarks
+- `run_head_to_head.py` — Proven vs baseline comparison
+- `run_tdd_vs_formal.py` — TDD vs formal verification comparison
+- `evaluate_oracle.py` — Independent test evaluation
 
-### Reproducing experiments
+### Reproducing the ablation study
 
 ```bash
-# Run Proven pipeline on all benchmarks
-python research/run_head_to_head.py --conditions A
+# Run ablation with a local model
+python research/run_ablation.py --models qwen2.5-coder-14b
 
-# Run TDD agent on all benchmarks
-python research/run_tdd_vs_formal.py --conditions T-local
+# Run ablation with Claude Sonnet
+python research/run_ablation.py --models claude-sonnet
 
-# Run independent tests against outputs
-python -m pytest research/oracle_tests/ \
-    --formal-dir runs/h2h/proven_sonnet \
-    --tdd-dir runs/tdd/sonnet
+# Analyze results
+python research/analyze_ablation.py --results-json research/ablation_results.json --full
 ```
 
 ## License

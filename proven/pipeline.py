@@ -2,7 +2,19 @@
 
 from __future__ import annotations
 
+import subprocess
 from pathlib import Path
+
+
+def _git_hash() -> str:
+    """Return short git commit hash, or 'unknown' if not in a repo."""
+    try:
+        return subprocess.check_output(
+            ["git", "rev-parse", "--short", "HEAD"],
+            stderr=subprocess.DEVNULL, text=True,
+        ).strip()
+    except Exception:
+        return "unknown"
 
 from .config import Config
 from .llm import LLMClient
@@ -48,6 +60,7 @@ def run_pipeline(config: Config, requirements_file: Path) -> int:
             "target": config.target,
             "max_retries": config.max_retries,
             "strategy": config.strategy_name,
+            "pipeline_version": _git_hash(),
         },
     )
     log = InteractionLog(state.workspace_path)
