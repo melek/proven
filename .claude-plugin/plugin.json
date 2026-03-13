@@ -1,6 +1,6 @@
 {
   "name": "proven",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "LLM-driven stepwise refinement with Dafny verification",
   "author": {
     "name": "Lionel Di Giacomo"

@@ -9,7 +9,7 @@
       "name": "proven",
       "source": "./",
       "description": "LLM-driven stepwise refinement with Dafny verification",
-      "version": "0.1.0"
+      "version": "0.2.0"
     }
   ]
 }
