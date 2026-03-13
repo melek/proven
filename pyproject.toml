@@ -1,6 +1,6 @@
 [project]
 name = "proven"
-version = "0.1.0"
+version = "0.2.0"
 description = "LLM-driven stepwise refinement with Dafny verification"
 requires-python = ">=3.10"
 license = "MIT"
@@ -21,6 +21,7 @@ classifiers = [
     "Topic :: Software Development :: Quality Assurance",
 ]
 dependencies = [
+    "anthropic>=0.40.0",
     "openai>=1.0.0",
     "python-dotenv>=1.0.0",
 ]
