@@ -1,0 +1,15 @@
+{
+  "name": "melek-proven",
+  "description": "Proven: LLM-driven stepwise refinement with Dafny verification",
+  "owner": {
+    "name": "Lionel Di Giacomo"
+  },
+  "plugins": [
+    {
+      "name": "proven",
+      "source": "./",
+      "description": "LLM-driven stepwise refinement with Dafny verification",
+      "version": "0.1.0"
+    }
+  ]
+}
