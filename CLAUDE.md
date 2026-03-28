@@ -104,8 +104,22 @@ Copy `.env.example` to `.env` and set:
 - DafnyPro [POPL 2026] — Inference-time framework for Dafny annotation generation
 - MIDSPIRAL / dafny-replay [Harvard 2025] — Closest prior work to Proven's vision
 
+## Claude Code Plugin (v0.4.0)
+
+Four skills in `skills/`:
+
+| Skill | Purpose |
+|-------|---------|
+| `/proven:advise` | Analyze code through a verification lens — guarantees, enforcement, gaps |
+| `/proven:survey` | Scan a codebase and rank modules by implicit invariant complexity |
+| `/proven:contribute` | Opt in to research observation collection (Experiment 004) |
+| `/proven:about` | Project overview, research findings, and optional setup walkthrough |
+
+Research participation details: `docs/RESEARCH.md`
+
 ## Session History
 
 - **2026-02-21**: Initial research. Explored formal verification landscape, Dijkstra's methodology, modern tool ecosystem.
 - **2026-02-22**: Built the pipeline. Implemented all 5 stages, preprocessing engine (14 rewrite rules), mentor system, adaptive temperature. Ran comparative experiments (Proven local vs baseline).
 - **2026-02-23**: TDD vs Formal experiment. Built TDD agent, 129 independent tests across 9 benchmarks. Ran Proven+Sonnet condition (7/9). All conditions produce correct code — zero independent test failures.
+- **2026-03-27**: Plugin v0.4.0. Organized research into `research/experiments/{001..004}/` with DESIGN.md files. Added CC plugin skills (advise, survey, contribute, about) and Experiment 004 (methodology transfer).

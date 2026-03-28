@@ -1,7 +1,7 @@
 {
   "name": "proven",
-  "version": "0.3.0",
-  "description": "LLM-driven stepwise refinement with Dafny verification",
+  "version": "0.4.0",
+  "description": "Verification-informed thinking for everyday development — methodology lens, codebase triage, and optional research participation",
   "author": {
     "name": "Lionel Di Giacomo"
   },

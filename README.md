@@ -151,24 +151,26 @@ python -m proven check
 The `research/` directory contains the full experiment infrastructure:
 
 - `paper-outline.md` — Working paper draft
-- `run_ablation.py` — Ablation study runner (4 configs x 9 benchmarks x 3 trials x 2 models)
-- `analyze_ablation.py` — Statistical analysis (Fisher's exact test, effect sizes, confidence intervals)
+- `experiments/001-ablation-preprocessing/` — Ablation study (4 configs x 9 benchmarks x 3 trials x 2 models)
+- `experiments/002-tdd-vs-formal/` — TDD vs formal verification comparison
+- `experiments/003-full-matrix/` — Full-matrix evaluation across models and benchmarks
+- `experiments/004-methodology-transfer/` — Methodology transfer through AI advisory skill
 - `oracle_tests/` — 129 independent tests across 9 benchmarks
-- `run_head_to_head.py` — Proven vs baseline comparison
-- `run_tdd_vs_formal.py` — TDD vs formal verification comparison
-- `evaluate_oracle.py` — Independent test evaluation
+- `shared/` — Shared analysis tools and evaluation scripts
+
+### Claude Code Plugin
+
+The `skills/` directory provides Claude Code skills for verification-informed analysis. Run `/proven:contribute` to learn about optional research participation. See `docs/RESEARCH.md` for the full research statement.
 
 ### Reproducing the ablation study
 
 ```bash
 # Run ablation with a local model
-python research/run_ablation.py --models qwen2.5-coder-14b
-
-# Run ablation with Claude Sonnet
-python research/run_ablation.py --models claude-sonnet
+python research/experiments/001-ablation-preprocessing/run_ablation.py --models qwen2.5-coder-14b
 
 # Analyze results
-python research/analyze_ablation.py --results-json research/ablation_results.json --full
+python research/experiments/001-ablation-preprocessing/analyze_ablation.py \
+  --results-json research/experiments/001-ablation-preprocessing/results/ablation_results.json --full
 ```
 
 ## License
